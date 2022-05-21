@@ -20,7 +20,8 @@ from keras.layers import Bidirectional
 from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras import optimizers
 from Model.my_model import Tweet
-
+import requests, bs4
+from bs4 import BeautifulSoup
 
 def remove_emojis(text):
     emoji_pattern = re.compile(
@@ -60,12 +61,24 @@ def clean_text(text):
     text = remove_stopwords(text)
     return text
 
+def getTweet_text(link):
+    try :
+        link = 'https://web.archive.org/web/20220210162643/' + link
+        r = requests.get(link).text
+        soup = bs4.BeautifulSoup(r, "lxml")
+        tweet_text = soup.find("p", {"class": "TweetTextSize TweetTextSize--jumbo js-tweet-text tweet-text"})
+        dest = soup.find('a', {"class": "twitter-timeline-link u-hidden"})
+        dest.decompose()
+        content = tweet_text.text
+        return content
+    except :
+        print("Error occured :/")
 
 class PredictionService:
     s = ""
 
-    def __init__(self, text_pred):
-        self.s = text_pred
+    def __init__(self, tweet_url):
+        self.s = getTweet_text(tweet_url)
 
     def nlp_preproc(self):
         self.s = clean_text(self.s)

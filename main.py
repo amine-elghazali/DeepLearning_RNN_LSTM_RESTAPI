@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from starlette.middleware.cors import CORSMiddleware
 
 nltk.download('punkt')
 import re
@@ -39,18 +40,29 @@ tf.get_logger().setLevel(logging.ERROR)
 
 app = FastAPI()
 
+origins = ["http://localhost:4200"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 loaded_model = load_model('LSTM_RNN_Model.h5')
 
 if __name__ == "__main__":
     loaded_model.summary()
     uvicorn.run("main:app", host="127.0.0.1", port=5000, log_level="info")
 
+@app.get("/")
+def get():
+    return {"hello":"world"}
+
 @app.post("/predict")
 async def get_body(tweet: Tweet):
-    predictionService = PredictionService(tweet.tweetMsg)
+    predictionService = PredictionService(tweet.tweet_url)
     final_data = predictionService.prediction()
-    # print("final text %s",final_text)
-    # print(f"3MEL HAYDA : {final_data['final_text']} \n encod : {final_data['string_embedded_doc']} ")
     pred_val = loaded_model.predict(final_data['string_embedded_doc'])
     print(f"prediction value : {pred_val}") 
     if pred_val > 0.5 :

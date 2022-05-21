@@ -2,5 +2,5 @@ from pydantic import BaseModel
 
 
 class Tweet(BaseModel):
-    tweetMsg: str
+    tweet_url: str
     isDisaster: bool = None
