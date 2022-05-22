@@ -73,13 +73,13 @@ async def get_body(tweet: Tweet):
     final_data = predictionService.prediction()
     pred_val = loaded_model.predict(final_data['string_embedded_doc'])
     print(f"prediction value : {pred_val}") 
-    if pred_val > 0.6 :
-        tweet.isDisaster = disasterDegree.sure
+    if pred_val < 0.4 :
+        tweet.isDisaster = disasterDegree.no
     elif pred_val<0.6 and pred_val>0.4 :
         tweet.isDisaster = disasterDegree.maybe
     else :
-        tweet.isDisaster = disasterDegree.no
-    return {"final text":final_data['final_text'],"isDisaster":tweet.isDisaster}
+        tweet.isDisaster = disasterDegree.sure
+    return {"final_text":final_data['final_text'],"isDisaster":tweet.isDisaster}
 
 
 
