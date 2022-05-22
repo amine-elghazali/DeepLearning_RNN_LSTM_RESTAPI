@@ -8,8 +8,6 @@ from fastapi import FastAPI
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-from starlette.middleware.cors import CORSMiddleware
-
 from enums.disaster_degrees import disasterDegree
 
 nltk.download('punkt')
@@ -40,6 +38,15 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 tf.get_logger().setLevel(logging.ERROR)
 
 
+
+
+
+
+
+loaded_model = load_model('LSTM_RNN_Model.h5')
+
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
 
 origins = [
@@ -50,15 +57,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["POST", "GET"],
     allow_headers=["*"],
+    max_age=3600,
 )
 
-loaded_model = load_model('LSTM_RNN_Model.h5')
-
-if __name__ == "__main__":
-    loaded_model.summary()
-    uvicorn.run("main:app", host="127.0.0.1", port=5000, log_level="info")
 
 @app.get("/")
 def get():
@@ -77,3 +80,10 @@ async def get_body(tweet: Tweet):
     else :
         tweet.isDisaster = disasterDegree.no
     return {"final text":final_data['final_text'],"isDisaster":tweet.isDisaster}
+
+
+
+
+if __name__ == "__main__":
+    loaded_model.summary()
+    uvicorn.run("main:app", host="127.0.0.1", port=5000, log_level="info")
