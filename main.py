@@ -10,6 +10,8 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from starlette.middleware.cors import CORSMiddleware
 
+from enums.disaster_degrees import disasterDegree
+
 nltk.download('punkt')
 import re
 import string
@@ -40,7 +42,9 @@ tf.get_logger().setLevel(logging.ERROR)
 
 app = FastAPI()
 
-origins = ["http://localhost:4200"]
+origins = [
+    "http://localhost:4200",
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,6 +53,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 loaded_model = load_model('LSTM_RNN_Model.h5')
 
 if __name__ == "__main__":
@@ -65,8 +70,10 @@ async def get_body(tweet: Tweet):
     final_data = predictionService.prediction()
     pred_val = loaded_model.predict(final_data['string_embedded_doc'])
     print(f"prediction value : {pred_val}") 
-    if pred_val > 0.5 :
-        tweet.isDisaster = True
+    if pred_val > 0.6 :
+        tweet.isDisaster = disasterDegree.sure
+    elif pred_val<0.6 and pred_val>0.4 :
+        tweet.isDisaster = disasterDegree.maybe
     else :
-        tweet.isDisaster = False
+        tweet.isDisaster = disasterDegree.no
     return {"final text":final_data['final_text'],"isDisaster":tweet.isDisaster}
